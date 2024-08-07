@@ -1,0 +1,100 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.3.RELEASE'
+    id 'de.jansauer.printcoverage' version '2.0.0'
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'jacoco'
+
+group = 'com.capgemini.csd.tippkick'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+ext['mockito.version'] = '2.24.5'
+ext['kotlin.version'] = '1.3.50'
+
+repositories {
+    mavenCentral()
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+
+sourceSets {
+    inttest {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/inttest/java')
+        }
+        resources {
+            srcDir file('src/inttest/resources')
+        }
+    }
+}
+
+configurations {
+    inttestCompile.extendsFrom testCompile
+    inttestRuntime.extendsFrom testRuntime
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Greenwich.RELEASE'
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
+    compile 'org.springframework.boot:spring-boot-starter-data-jpa'
+    compile 'org.springframework.boot:spring-boot-starter-web'
+    compile 'org.springframework.kafka:spring-kafka'
+    compile 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    compile 'io.springfox:springfox-swagger2:2.9.2'
+    compile 'com.h2database:h2'
+    annotationProcessor 'org.projectlombok:lombok:1.18.6'
+    implementation 'org.projectlombok:lombok:1.18.6'
+
+    runtime 'javax.xml.bind:jaxb-api:2.3.0'
+    runtime 'org.springframework.boot:spring-boot-devtools'
+    runtime 'io.springfox:springfox-swagger-ui:2.9.2'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.4.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:2.24.5'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'junit', module: 'junit'
+    }
+    testImplementation 'io.rest-assured:rest-assured:3.3.0'
+    testImplementation 'io.rest-assured:spring-mock-mvc:3.3.0'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testImplementation 'au.com.dius:pact-jvm-consumer-junit5:4.0.4'
+
+    inttestCompile 'io.cucumber:cucumber-java:4.2.5'
+    inttestCompile 'io.cucumber:cucumber-junit:4.2.5'
+    inttestCompile 'io.cucumber:cucumber-spring:4.2.5'
+    inttestAnnotationProcessor 'org.projectlombok:lombok:1.18.6'
+    inttestImplementation 'org.projectlombok:lombok:1.18.6'
+    inttestCompile 'org.springframework.boot:spring-boot-starter-test'
+    inttestCompile 'org.springframework.boot:spring-boot-starter-web'
+    inttestCompile 'org.springframework.kafka:spring-kafka-test'
+    inttestCompile 'org.apache.kafka:kafka-clients'
+    inttestCompile 'log4j:log4j:1.2.17'
+    inttestCompile 'com.github.tomakehurst:wiremock-standalone:2.21.0'
+
+    inttestRuntime 'com.h2database:h2'
+}
+
+task cucumberTest(type: Test) {
+    testClassesDirs = sourceSets.inttest.output.classesDirs
+    classpath = sourceSets.inttest.runtimeClasspath
+}
